@@ -3,7 +3,7 @@ from docx import Document
 
 def is_code_file(file_name):
     """Check if the file has a code-related extension and is not minified or inside node_modules."""
-    code_extensions = {".py", ".js", ".java", ".cpp", ".c", ".html", ".css", ".ts", ".kt", ".swift", ".php"}
+    code_extensions = {".py", ".js", ".java", ".cpp", ".c", ".html", ".css", ".ts",".tsx",".jsx", ".kt", ".swift", ".php"}
     
     # Exclude minified files (e.g., .min.js, .min.css)
     if file_name.endswith(".min.js") or file_name.endswith(".min.css"):
@@ -84,3 +84,4 @@ if __name__ == "__main__":
     else:
         output_docx = os.path.join(output_directory, "Project_Code_Documentation.docx")
         copy_code_to_docx(project_directory, output_docx)
+
