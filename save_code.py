@@ -37,10 +37,10 @@ def copy_code_to_docx(source_folder, output_file):
     doc.add_paragraph(f"📌 Total Code Files: {total_files}\n", style="Normal")
 
     file_count = 0  # Track processed files
-
-    for root, _, files in os.walk(source_folder):
-        if "node_modules" in root:  # Skip node_modules folder
-            continue
+    skip_folders = ["node_modules", "dist", "build", ".venv", "venv", "env", "__pycache__"]
+    for root, dirs, files in os.walk(source_folder):
+        # Skip unwanted folders
+        dirs[:] = [d for d in dirs if d not in skip_folders]
 
         for file in sorted(files):  # Ensuring sequential order
             if is_code_file(file):
@@ -51,21 +51,29 @@ def copy_code_to_docx(source_folder, output_file):
 
                     file_count += 1
 
+                    # Show progress in terminal
+                    progress_percent = (file_count / total_files) * 100 if total_files else 0
+                    print(f"Processing file {file_count}/{total_files} ({progress_percent:.2f}%) - {file_path}")
+
                     # Add File Heading (Formatted)
                     doc.add_heading(f"{file_count}. {format_filename_as_heading(file)}", level=2)
                     doc.add_paragraph(f"📂 File Path: {file_path}\n", style="Normal")
-                    
+
                     # Add Code Block
                     code_paragraph = doc.add_paragraph()
-                    code_paragraph.add_run(code).bold = False
-                    
+                    try:
+                        code_paragraph.add_run(code).bold = False
+                    except Exception as xml_error:
+                        print(f"⚠️ Skipped file due to XML error: {file_path}")
+                        continue
+
                     # Add Separator for Better Readability
                     doc.add_paragraph("\n" + "=" * 80 + "\n")
 
                 except Exception as e:
-                    print(f"🚨 The code has stopped! Error occurred at file: {file_path}")
+                    print(f"⚠️ Skipped file due to read error: {file_path}")
                     print(f"⚠️ Error: {e}")
-                    return  # Stop execution immediately
+                    continue
 
     doc.save(output_file)
     print(f"✅ Code successfully copied to: {output_file}")
@@ -84,4 +92,5 @@ if __name__ == "__main__":
     else:
         output_docx = os.path.join(output_directory, "Project_Code_Documentation.docx")
         copy_code_to_docx(project_directory, output_docx)
+
 
